@@ -1,0 +1,19 @@
+[project]
+name = "agent-distillation-lab"
+version = "0.1.0"
+description = "A small, reproducible study of tool-policy distillation and first-error correction"
+requires-python = ">=3.10"
+dependencies = ["scikit-learn>=1.4,<2"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[project.scripts]
+agent-distill = "agent_distillation_lab.experiment:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["agent_distillation_lab*"]
