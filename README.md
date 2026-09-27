@@ -4,7 +4,9 @@ I wanted to get past the vague description that agent distillation is "making an
 
 The task is to answer a question about a project. One kind of question needs the project's organization; the other needs the city where that organization is based. The latter takes two searches and two document opens. A search sometimes returns no hits, and a second query form is needed. The facts live in the search environment. The student never gets a project-to-city lookup table in its training data.
 
-The teacher is a reference policy over the visible interaction state. The student is a depth-8 decision tree trained on the teacher's action choices. That is a small policy model, **not an LLM**. This experiment tests the mechanics of behavior cloning and recovery in a controlled setting. It is not a reproduction of the accuracy or scale in the LLM papers below.
+The teacher is a hand-written reference policy over the visible interaction state, in `teacher_action()` in `world.py`. It is **not GPT, Qwen, or any other language model**. I used rules here so I can check what the teacher would do at every state, including right after a search fails. That makes the first-disagreement labels reproducible, although a different action could still lead to a correct answer.
+
+The student is scikit-learn's `DecisionTreeClassifier(max_depth=8)`, in `policy.py`. It learns the teacher's choice among seven tool actions from observed-state features. I chose a tree because it trains quickly on a CPU and keeps the experiment focused on which states the student has seen. A clone that fails after an empty search is a data-coverage problem I can inspect, not a mystery about model training. This is a small policy model, **not an LLM**. It does not test compression from a large language model into a small one.
 
 ## Run it
 
