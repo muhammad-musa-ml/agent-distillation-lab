@@ -1,0 +1,11 @@
+{
+  "teacher_data": "results\\llm_teacher.jsonl",
+  "successful_teacher_trajectories": 57,
+  "training_decisions": 381,
+  "student_model": "Qwen/Qwen3-0.6B",
+  "trainable_parameters": 1146880,
+  "epochs": 2,
+  "optimizer_updates": 192,
+  "final_10_loss_mean": 0.0204,
+  "adapter": "results\\llm_adapter"
+}

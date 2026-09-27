@@ -7,9 +7,16 @@ dependencies = ["scikit-learn>=1.4,<2"]
 
 [project.optional-dependencies]
 test = ["pytest>=8,<10"]
+llm = [
+    "accelerate>=1,<2",
+    "peft>=0.17,<1",
+    "torch>=2.5,<3",
+    "transformers>=4.51,<5",
+]
 
 [project.scripts]
 agent-distill = "agent_distillation_lab.experiment:main"
+agent-distill-llm = "agent_distillation_lab.llm_experiment:main"
 
 [build-system]
 requires = ["setuptools>=69"]

@@ -1,6 +1,46 @@
-# A small experiment in agent distillation
+# Learning a search agent's tool policy from a larger model
 
-I wanted to get past the vague description that agent distillation is "making an agent smaller." What is the student actually learning? I built a deliberately small search task so I could inspect every decision, every tool response, and every training label.
+I wanted to get past the vague description that agent distillation is "making an agent smaller." I started with a rule-based teacher and a decision tree to check the interaction loop, the loss boundary, and the failure test. That run exposed a real weakness in clean-trajectory imitation: the student kept searching after an empty result. I then ran the same environment with an actual 4B language-model teacher and trained a 0.6B language-model student on its successful tool traces. I kept both runs here because the first one explains what I was testing before I spent time on model training.
+
+## The language-model run
+
+The teacher was [Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507), using Ollama's `qwen3:4b-instruct-2507-q4_K_M` quantization. The student was [Qwen3-0.6B](https://huggingface.co/Qwen/Qwen3-0.6B), trained with a rank-8 LoRA adapter on my 6 GB RTX 4050. I used 4B versus 0.6B because both could run locally, one at a time. No paid API or claimed 32B teacher is hidden behind these numbers.
+
+The teacher saw the question, prior tool actions, actual tool observations, and a short state summary derived from those observations. It picked one of seven actions. I collected 80 rollouts with a 25% miss rate on each primary search. The teacher completed 57 tasks; I kept those 57 trajectories and trained on their 381 action decisions. The student predicts the next action from the same interaction history. In the tokenized training example, the question, prompt, and tool observations have label `-100`; only the action and end-of-turn tokens carry loss. The student has 1,146,880 trainable LoRA parameters and received two epochs, or 192 optimizer updates.
+
+| Policy | Success on 30 held-out tasks | Mean tool calls |
+| --- | ---: | ---: |
+| 4B teacher | 20/30 (66.7%) | 6.10 |
+| Untuned 0.6B student | 1/30 (3.3%) | 2.93 |
+| Tuned 0.6B student | 30/30 (100%) | 5.80 |
+
+The 30 tasks use seed 103 and a 25% miss rate. On a second held-out split with seed 107 and a 50% miss rate, the tuned student completed 50/50 tasks. The untuned student's low tool-call count reflects early invalid responses, so it is not an efficiency win. The tuned student beating the teacher here reflects a small environment with explicit tool rules and training on verified teacher successes. It is not evidence that the 0.6B model is generally stronger than the 4B model.
+
+This is an **action-policy distillation experiment**, not a faithful reproduction of Kang et al.'s full setup. The teacher was prompted with the tool rules and constrained to a JSON action at each turn; the student generated an action name freely. Both shared the same prompt content, and the base versus tuned student used identical decoding. The search environment has fixed action names, two question types, and generated facts. The agent does not write search queries, code, natural-language thoughts, citations, or the final answer text. An answer action copies the requested fact from an opened document. These boundaries matter more than the 100% number.
+
+Kang et al. used a much larger teacher and tested small agents on factual and mathematical benchmarks with retrieval and code tools. My laptop could not run that setup. I kept the teacher trajectory, observation masking, student fine-tuning, and in-loop evaluation parts, then reduced the model sizes and task. The numbers above are mine on this generated task; they are not a reproduction of the paper's benchmark scores.
+
+The [80 teacher attempts](data/llm_teacher_rollouts.jsonl), [LoRA adapter](artifacts/qwen3-0.6b-lora/), and [evaluation reports](reports/) are included so the run can be inspected. The failed teacher attempts are in the data too; the training loader selects only records with `success: true`.
+
+### Reproduce the LLM run
+
+These are the Windows commands I used. [Ollama](https://ollama.com/) serves the teacher, and [uv](https://docs.astral.sh/uv/) creates the Python environment. The CUDA wheel matters here: the default Windows PyTorch wheel that uv installed was CPU-only.
+
+```powershell
+ollama pull qwen3:4b-instruct-2507-q4_K_M
+uv sync --extra llm --extra test
+uv pip install --python .venv/Scripts/python.exe --index-url https://download.pytorch.org/whl/cu128 'torch==2.8.0+cu128'
+.venv/Scripts/python.exe -m agent_distillation_lab.llm_experiment collect --tasks 80 --seed 101 --miss-rate 0.25
+.venv/Scripts/python.exe -m agent_distillation_lab.llm_experiment train --data results/llm_teacher.jsonl --output results/llm_adapter --epochs 2
+.venv/Scripts/python.exe -m agent_distillation_lab.llm_experiment eval --mode teacher --tasks 30 --seed 103 --miss-rate 0.25
+ollama stop qwen3:4b-instruct-2507-q4_K_M
+.venv/Scripts/python.exe -m agent_distillation_lab.llm_experiment eval --mode base --tasks 30 --seed 103 --miss-rate 0.25
+.venv/Scripts/python.exe -m agent_distillation_lab.llm_experiment eval --mode adapter --tasks 30 --seed 103 --miss-rate 0.25 --adapter results/llm_adapter
+```
+
+`collect` writes all attempts to `results/llm_teacher.jsonl`. `train` filters for completed tasks and writes an adapter, not the base model weights. To evaluate the checked-in adapter, use `--adapter artifacts/qwen3-0.6b-lora`. The Qwen model weights download from their model card on first use. The teacher and student were run sequentially to fit the GPU.
+
+## Why I started with a rule-based test
 
 The task is to answer a question about a project. One kind of question needs the project's organization; the other needs the city where that organization is based. The latter takes two searches and two document opens. A search sometimes returns no hits, and a second query form is needed. The facts live in the search environment. The student never gets a project-to-city lookup table in its training data.
 
@@ -8,7 +48,7 @@ The teacher is a hand-written reference policy over the visible interaction stat
 
 The student is scikit-learn's `DecisionTreeClassifier(max_depth=8)`, in `policy.py`. It learns the teacher's choice among seven tool actions from observed-state features. I chose a tree because it trains quickly on a CPU and keeps the experiment focused on which states the student has seen. A clone that fails after an empty search is a data-coverage problem I can inspect, not a mystery about model training. This is a small policy model, **not an LLM**. It does not test compression from a large language model into a small one.
 
-## Run it
+### Run the controlled test
 
 Python 3.10 or newer is enough. With [uv](https://docs.astral.sh/uv/):
 
@@ -21,7 +61,7 @@ The first command checks the environment and training behavior. The second print
 
 The whole experiment uses fixed seeds. `--train`, `--correction`, and `--test` change the three split sizes. Test project names are disjoint from training names. No API key or downloaded dataset is needed.
 
-## What is trained
+### What the tree learns
 
 A teacher trace looks like this:
 
@@ -46,7 +86,7 @@ This is a trace from the default run. The point is the order of control. The mod
 
 My first model only sees clean teacher demonstrations. For the second model, I run that student on tasks where the primary search sometimes fails. At its first decision that disagrees with the teacher, I save the observed state, let the teacher finish from there, and add those action labels to the training set. This is a small correction pass inspired by SCoRe. It does **not** implement SCoRe's reinforcement learning phase.
 
-## Results
+### Controlled results
 
 These are from the default run: 500 clean training tasks, 250 correction tasks, and two held-out sets of 300 tasks each. On the second test set, each primary search has a 35% chance of returning no hit. The metric is exact task success, measured after the policy acts in the environment.
 
@@ -71,11 +111,11 @@ I kept the reading list close to the code. Some papers are about agent distillat
 
 3. [Distilling Step-by-Step!](https://arxiv.org/abs/2305.02301), Hsieh et al., 2023. A teacher's rationale can be useful supervision for a smaller model. But a static rationale has no real tool response halfway through it. This helped me see why reasoning distillation and agent distillation are related but different experiments.
 
-4. [Distilling LLM Agent into Small Models with Retrieval and Code Tools](https://arxiv.org/abs/2505.17612), Kang et al., 2025. This gave me the central training boundary. Write a trajectory as `tau = ((r_1, a_1, o_1), ..., (r_T, a_T, o_T))`. The model produces reasoning `r` and actions `a`; the environment produces observations `o`. Their student objective is the negative log likelihood of the teacher's reasoning and action given the earlier history. Observations stay in the context but are excluded from the loss. An action-only likelihood version would be `L = -sum_t log p_student(a_t | history_t)`. My decision tree instead fits teacher action labels with Gini impurity, so it is an analogy to that objective, not a numerical implementation of it. The role flags in `supervision.py` show how I would preserve the full boundary in token SFT.
+4. [Distilling LLM Agent into Small Models with Retrieval and Code Tools](https://arxiv.org/abs/2505.17612), Kang et al., 2025. This gave me the central training boundary. Write a trajectory as `tau = ((r_1, a_1, o_1), ..., (r_T, a_T, o_T))`. The model produces reasoning `r` and actions `a`; the environment produces observations `o`. Their student objective is the negative log likelihood of the teacher's reasoning and action given the earlier history. Observations stay in the context but are excluded from the loss. An action-only likelihood version is `L = -sum_t log p_student(a_t | history_t)`. The Qwen run implements that action-token version by masking the prompt and tool tokens. It does not train on reasoning spans. The tree run uses Gini impurity, so its objective is only an analogy.
 
 5. [Student-Centered Distillation Narrows the Agentic Gap Between Small and Large LLMs](https://arxiv.org/abs/2509.14257), Lyu et al., 2026 version. The part that stuck with me was correcting the earliest student error. A student visits states that never appear in perfect teacher rollouts. Training only on the perfect rollouts leaves those states uncovered. I implemented a narrow SFT version of that idea. The paper goes further with verified prefixes and short-horizon RL.
 
-6. [Structured Agent Distillation for Large Language Model Agents](https://arxiv.org/abs/2505.13820), Liu et al., 2025. They separate reasoning and action spans and apply different losses. I did not implement their weighted span objective, but their design is a useful check on a future LM version: a tool call has a different failure cost from a fluent explanation.
+6. [Structured Agent Distillation for Large Language Model Agents](https://arxiv.org/abs/2505.13820), Liu et al., 2025. They separate reasoning and action spans and apply different losses. I did not implement their weighted span objective. My student learns actions only, which makes the distinction visible but leaves the reasoning side untested.
 
 7. [Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection](https://arxiv.org/abs/2310.11511), Asai et al., 2024. Retrieval need not happen on every query. Self-RAG's retrieval and critique tokens made me think about the decision to search as part of the policy, while the retrieved passage remains external evidence. My task is narrower: both question types require an initial search, and the city question requires a second one.
 
@@ -85,8 +125,8 @@ I kept the reading list close to the code. Some papers are about agent distillat
 
 ## What this does not establish
 
-The environment is synthetic, the search API has a fixed schema, and the teacher is code rather than a large language model. The decision tree does not write natural-language thoughts or arbitrary search queries. The 100% result after correction says the retry rule was learnable here. It says nothing about HotpotQA, unseen tools, noisy web pages, or a 0.5B parameter student.
+Both runs use the same synthetic environment and fixed tool names. The tree run is a controlled diagnostic with a code teacher. The Qwen run uses real language models, but it is still small and heavily scaffolded. Neither result establishes performance on HotpotQA, unseen tools, noisy web pages, citation faithfulness, or general search-query writing. A successful teacher trace can contain redundant calls, so filtering by final success does not guarantee an ideal policy.
 
-The next real experiment I would run is a small LM trained on retrieval trajectories with the same role mask, then evaluate it against answer-only tuning and plain trajectory SFT on held-out multi-hop questions. I would keep task success, invalid tool calls, retries, and tool cost together in the report. Otherwise it would be too easy to mistake a nice-looking trace for a capable agent.
+The next experiment should use real multi-hop questions with a retrieval index, compare against answer-only and rationale-only tuning, and let the student write its own search queries. I would add first-error corrections to the LLM student only after measuring where its rollouts diverge. I also want to test whether another valid tool order is being marked as a mistake. That is where the small synthetic task stops answering my question.
 
-Code is in [`agent_distillation_lab/`](agent_distillation_lab/). The main run is [`experiment.py`](agent_distillation_lab/experiment.py), and the failure cases are checked in [`tests/`](tests/).
+Code is in [`agent_distillation_lab/`](agent_distillation_lab/). The controlled run is [`experiment.py`](agent_distillation_lab/experiment.py), the language-model run is [`llm_experiment.py`](agent_distillation_lab/llm_experiment.py), and the tests are in [`tests/`](tests/).

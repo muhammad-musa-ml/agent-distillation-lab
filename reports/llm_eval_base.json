@@ -1,0 +1,97 @@
+{
+  "mode": "base",
+  "teacher_model": null,
+  "student_model": "Qwen/Qwen3-0.6B",
+  "adapter": null,
+  "tasks": 30,
+  "seed": 103,
+  "miss_rate": 0.25,
+  "success_rate": 0.0333,
+  "invalid_responses": 25,
+  "mean_tool_calls": 2.9333,
+  "sample_traces": [
+    {
+      "question": "Which city is home to the organization behind project P-103-0?",
+      "expected": "Tunis",
+      "given": null,
+      "history": [
+        {
+          "action": "INVALID",
+          "observation": "search_org_alias: search for the organization found in the project document."
+        }
+      ]
+    },
+    {
+      "question": "Which city is home to the organization behind project P-103-1?",
+      "expected": "Boston",
+      "given": null,
+      "history": [
+        {
+          "action": "INVALID",
+          "observation": "search_org_alias: search for the organization found in the project document."
+        }
+      ]
+    },
+    {
+      "question": "Which city is home to the organization behind project P-103-2?",
+      "expected": "Tunis",
+      "given": null,
+      "history": [
+        {
+          "action": "INVALID",
+          "observation": "search_org_alias: search for the organization found in the project document."
+        }
+      ]
+    },
+    {
+      "question": "Which organization developed project P-103-3?",
+      "expected": "Mariner-103-3",
+      "given": null,
+      "history": [
+        {
+          "action": "search_project_alias",
+          "observation": "search(project alias P-103-3): ['project']"
+        },
+        {
+          "action": "search_project_alias",
+          "observation": "search(project alias P-103-3): ['project']"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "tool error: action requires a search hit or an opened project"
+        },
+        {
+          "action": "search_project",
+          "observation": "search(P-103-3): []"
+        },
+        {
+          "action": "search_org",
+          "observation": "tool error: action requires a search hit or an opened project"
+        },
+        {
+          "action": "search_org",
+          "observation": "tool error: action requires a search hit or an opened project"
+        },
+        {
+          "action": "search_org",
+          "observation": "tool error: action requires a search hit or an opened project"
+        },
+        {
+          "action": "search_org",
+          "observation": "tool error: action requires a search hit or an opened project"
+        }
+      ]
+    },
+    {
+      "question": "Which organization developed project P-103-4?",
+      "expected": "Aster-103-4",
+      "given": null,
+      "history": [
+        {
+          "action": "INVALID",
+          "observation": "search_org_alias: search for the organization found in the project document."
+        }
+      ]
+    }
+  ]
+}

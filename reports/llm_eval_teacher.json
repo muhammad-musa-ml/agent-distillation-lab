@@ -1,0 +1,193 @@
+{
+  "mode": "teacher",
+  "teacher_model": "qwen3:4b-instruct-2507-q4_K_M",
+  "student_model": null,
+  "adapter": null,
+  "tasks": 30,
+  "seed": 103,
+  "miss_rate": 0.25,
+  "success_rate": 0.6667,
+  "invalid_responses": 0,
+  "mean_tool_calls": 6.1,
+  "sample_traces": [
+    {
+      "question": "Which city is home to the organization behind project P-103-0?",
+      "expected": "Tunis",
+      "given": "Tunis",
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-103-0): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-103-0 was developed by Quarry-103-0."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Quarry-103-0): ['org']"
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Quarry-103-0): ['org']"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Quarry-103-0): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Quarry-103-0 is based in Tunis."
+        },
+        {
+          "action": "answer",
+          "observation": "submitted: Tunis"
+        }
+      ]
+    },
+    {
+      "question": "Which city is home to the organization behind project P-103-1?",
+      "expected": "Boston",
+      "given": "Boston",
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-103-1): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-103-1 was developed by Cedar-103-1."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Cedar-103-1): []"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Cedar-103-1): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Cedar-103-1 is based in Boston."
+        },
+        {
+          "action": "answer",
+          "observation": "submitted: Boston"
+        }
+      ]
+    },
+    {
+      "question": "Which city is home to the organization behind project P-103-2?",
+      "expected": "Tunis",
+      "given": null,
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-103-2): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-103-2 was developed by Mariner-103-2."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Mariner-103-2): ['org']"
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Mariner-103-2): ['org']"
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Mariner-103-2): ['org']"
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Mariner-103-2): ['org']"
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Mariner-103-2): ['org']"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Mariner-103-2): ['org']"
+        }
+      ]
+    },
+    {
+      "question": "Which organization developed project P-103-3?",
+      "expected": "Mariner-103-3",
+      "given": null,
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-103-3): []"
+        },
+        {
+          "action": "search_project_alias",
+          "observation": "search(project alias P-103-3): ['project']"
+        },
+        {
+          "action": "search_project_alias",
+          "observation": "search(project alias P-103-3): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-103-3 was developed by Mariner-103-3."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Mariner-103-3): ['org']"
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Mariner-103-3): ['org']"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Mariner-103-3): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Mariner-103-3 is based in Boston."
+        }
+      ]
+    },
+    {
+      "question": "Which organization developed project P-103-4?",
+      "expected": "Aster-103-4",
+      "given": "Aster-103-4",
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-103-4): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-103-4 was developed by Aster-103-4."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Aster-103-4): ['org']"
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Aster-103-4): ['org']"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Aster-103-4): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Aster-103-4 is based in Accra."
+        },
+        {
+          "action": "answer",
+          "observation": "submitted: Aster-103-4"
+        }
+      ]
+    }
+  ]
+}

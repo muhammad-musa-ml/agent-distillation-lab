@@ -1,0 +1,189 @@
+{
+  "mode": "adapter",
+  "teacher_model": null,
+  "student_model": "Qwen/Qwen3-0.6B",
+  "adapter": "results\\llm_adapter",
+  "tasks": 50,
+  "seed": 107,
+  "miss_rate": 0.5,
+  "success_rate": 1.0,
+  "invalid_responses": 0,
+  "mean_tool_calls": 5.84,
+  "sample_traces": [
+    {
+      "question": "Which organization developed project P-107-0?",
+      "expected": "Cedar-107-0",
+      "given": "Cedar-107-0",
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-107-0): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-107-0 was developed by Cedar-107-0."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Cedar-107-0): ['org']"
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Cedar-107-0): ['org']"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Cedar-107-0): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Cedar-107-0 is based in Perth."
+        },
+        {
+          "action": "answer",
+          "observation": "submitted: Cedar-107-0"
+        }
+      ]
+    },
+    {
+      "question": "Which organization developed project P-107-1?",
+      "expected": "Mariner-107-1",
+      "given": "Mariner-107-1",
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-107-1): []"
+        },
+        {
+          "action": "search_project_alias",
+          "observation": "search(project alias P-107-1): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-107-1 was developed by Mariner-107-1."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Mariner-107-1): []"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Mariner-107-1): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Mariner-107-1 is based in Boston."
+        },
+        {
+          "action": "answer",
+          "observation": "submitted: Mariner-107-1"
+        }
+      ]
+    },
+    {
+      "question": "Which city is home to the organization behind project P-107-2?",
+      "expected": "Lima",
+      "given": "Lima",
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-107-2): []"
+        },
+        {
+          "action": "search_project_alias",
+          "observation": "search(project alias P-107-2): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-107-2 was developed by Quarry-107-2."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Quarry-107-2): []"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Quarry-107-2): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Quarry-107-2 is based in Lima."
+        },
+        {
+          "action": "answer",
+          "observation": "submitted: Lima"
+        }
+      ]
+    },
+    {
+      "question": "Which city is home to the organization behind project P-107-3?",
+      "expected": "Kyoto",
+      "given": "Kyoto",
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-107-3): []"
+        },
+        {
+          "action": "search_project_alias",
+          "observation": "search(project alias P-107-3): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-107-3 was developed by Orchid-107-3."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Orchid-107-3): ['org']"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Orchid-107-3): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Orchid-107-3 is based in Kyoto."
+        },
+        {
+          "action": "answer",
+          "observation": "submitted: Kyoto"
+        }
+      ]
+    },
+    {
+      "question": "Which organization developed project P-107-4?",
+      "expected": "Cedar-107-4",
+      "given": "Cedar-107-4",
+      "history": [
+        {
+          "action": "search_project",
+          "observation": "search(P-107-4): []"
+        },
+        {
+          "action": "search_project_alias",
+          "observation": "search(project alias P-107-4): ['project']"
+        },
+        {
+          "action": "open_project",
+          "observation": "Project P-107-4 was developed by Cedar-107-4."
+        },
+        {
+          "action": "search_org",
+          "observation": "search(Cedar-107-4): []"
+        },
+        {
+          "action": "search_org_alias",
+          "observation": "search(organization alias Cedar-107-4): ['org']"
+        },
+        {
+          "action": "open_org",
+          "observation": "Cedar-107-4 is based in Oslo."
+        },
+        {
+          "action": "answer",
+          "observation": "submitted: Cedar-107-4"
+        }
+      ]
+    }
+  ]
+}
